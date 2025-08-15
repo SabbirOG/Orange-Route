@@ -1,0 +1,26 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.log
+
+# Ignore uploads (if not needed in repo)
+uploads/profile_pictures/*.jpg
+uploads/profile_pictures/*.jpeg
+uploads/profile_pictures/*.png
+
+# Ignore any hack files
+*.hack
+
+# Ignore backup files
+*.bak
+*.backup
