@@ -34,3 +34,8 @@ Stack trace:
 #0 C:\xampp\htdocs\OrangeRoute\backend\update_location.php(51): mysqli->prepare('UPDATE shuttles...')
 #1 {main}
   thrown in C:\xampp\htdocs\OrangeRoute\backend\update_location.php on line 51
+[23-Sep-2025 03:25:48 Asia/Dhaka] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'latitude' in 'field list' in C:\xampp\htdocs\OrangeRoute\backend\update_location.php:51
+Stack trace:
+#0 C:\xampp\htdocs\OrangeRoute\backend\update_location.php(51): mysqli->prepare('UPDATE shuttles...')
+#1 {main}
+  thrown in C:\xampp\htdocs\OrangeRoute\backend\update_location.php on line 51
