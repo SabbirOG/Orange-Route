@@ -1,19 +1,7 @@
-# Force correct language detection
-*.php     linguist-language=PHP
-*.html    linguist-language=HTML
-*.css     linguist-language=CSS
-*.js      linguist-language=JavaScript
-*.sql     linguist-language=SQL
+# Force GitHub to detect HTML in PHP files
+*.php linguist-language=HTML
 
-# Exclude certain directories from language detection
-logs/     linguist-vendored
-uploads/  linguist-vendored
-
-# Force specific file types
-*.md      linguist-documentation
-*.txt     linguist-documentation
-*.log     linguist-vendored
-
-# Ensure proper detection of mixed content files
-*.php     linguist-detectable
-
+# Keep other file types as they are
+*.css linguist-language=CSS
+*.js linguist-language=JavaScript
+*.sql linguist-language=SQL
