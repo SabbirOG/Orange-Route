@@ -1,7 +1,15 @@
-# Let GitHub detect both HTML and PHP content in PHP files
-# Remove the override to allow mixed language detection
-
-# Keep other file types as they are
+# Force all languages to be visible in GitHub stats
+*.php linguist-language=PHP
 *.css linguist-language=CSS
 *.js linguist-language=JavaScript
 *.sql linguist-language=SQL
+*.md linguist-language=Markdown
+*.json linguist-language=JSON
+
+# Force GitHub to show all languages (even small percentages)
+*.php linguist-detectable=true
+*.css linguist-detectable=true
+*.js linguist-detectable=true
+*.sql linguist-detectable=true
+*.md linguist-detectable=true
+*.json linguist-detectable=true

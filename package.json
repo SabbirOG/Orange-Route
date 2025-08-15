@@ -1,0 +1,30 @@
+{
+  "name": "orangeroute",
+  "version": "1.0.0",
+  "description": "University Shuttle Tracking System - Real-time shuttle tracking with driver communication",
+  "main": "index.php",
+  "scripts": {
+    "start": "php -S localhost:8000",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "shuttle",
+    "tracking",
+    "university",
+    "transportation",
+    "real-time",
+    "php",
+    "javascript",
+    "css"
+  ],
+  "author": "Sabbir Ahmed",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sabbirOG/Orange-Route.git"
+  },
+  "homepage": "https://github.com/sabbirOG/Orange-Route#readme",
+  "engines": {
+    "php": ">=7.4.0"
+  }
+}
