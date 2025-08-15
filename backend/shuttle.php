@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'driver') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        die("CSRF token validation failed.");
+    }
+    
     $shuttle_id = $_POST['shuttle_id'];
     $action = $_POST['action'];
 
@@ -23,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("UPDATE shuttles SET status='inactive' WHERE id=?");
     } elseif ($action === 'traffic') {
         $stmt = $conn->prepare("UPDATE shuttles SET traffic_status=1 WHERE id=?");
+    } elseif ($action === 'no_traffic') {
+        $stmt = $conn->prepare("UPDATE shuttles SET traffic_status=0 WHERE id=?");
     }
     $stmt->bind_param("i", $shuttle_id);
     $stmt->execute();

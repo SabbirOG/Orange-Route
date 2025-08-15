@@ -7,6 +7,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
+    // Input validation
+    if (empty($username) || empty($email) || empty($password)) {
+        die("All fields are required.");
+    }
+    
+    if (strlen($username) < 3 || strlen($username) > 50) {
+        die("Username must be between 3 and 50 characters.");
+    }
+    
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        die("Invalid email format.");
+    }
+    
+    if (strlen($password) < PASSWORD_MIN_LENGTH) {
+        die("Password must be at least " . PASSWORD_MIN_LENGTH . " characters long.");
+    }
+
     // Check if username or email exists
     $stmt = $conn->prepare("SELECT id FROM users WHERE username=? OR email=?");
     $stmt->bind_param("ss", $username, $email);
@@ -24,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $stmt->close();
 
-    echo "Signup successful. <a href='../../frontend/login.php'>Login here</a>.";
+    // Redirect to a styled success page
+    header("Location: ../../frontend/signup_success.php?username=" . urlencode($username));
+    exit();
 }
 ?>

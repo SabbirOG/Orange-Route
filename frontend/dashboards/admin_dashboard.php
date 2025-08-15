@@ -23,14 +23,13 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
 <body>
     <header>
         <div class="header-container">
-            <h1>🚌 OrangeRoute</h1>
-            <nav>
-                <ul>
-                    <li><a href="../index.php">Home</a></li>
-                    <li><a href="../profile.php">Profile</a></li>
-                    <li><a href="../../backend/auth.php?action=logout">Logout</a></li>
-                </ul>
-            </nav>
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/dashboard_navigation.php'; ?>
         </div>
     </header>
     
@@ -88,6 +87,7 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
                                 <td>
                                     <?php if($user['role'] === 'driver'): ?>
                                         <form action="../../backend/assign_shuttle.php" method="POST" style="display:inline;">
+                                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                                             <input type="hidden" name="driver_id" value="<?php echo $user['id']; ?>">
                                             <select name="route_name" required style="margin-right: 0.5rem;">
                                                 <?php echo getRouteOptions(); ?>
@@ -127,5 +127,6 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
     <footer>
         <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
     </footer>
+    <script src="../../assets/js/main.js"></script>
 </body>
 </html>

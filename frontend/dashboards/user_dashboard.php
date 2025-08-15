@@ -30,14 +30,13 @@ $stmt->close();
 <body>
     <header>
         <div class="header-container">
-            <h1>🚌 OrangeRoute</h1>
-            <nav>
-                <ul>
-                    <li><a href="../index.php">Home</a></li>
-                    <li><a href="../profile.php">Profile</a></li>
-                    <li><a href="../../backend/auth.php?action=logout">Logout</a></li>
-                </ul>
-            </nav>
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/dashboard_navigation.php'; ?>
         </div>
     </header>
     
@@ -96,6 +95,15 @@ $stmt->close();
                 </div>
             <?php endif; ?>
             
+            <!-- Live Map Section -->
+            <div class="card">
+                <h3>🗺️ Live Shuttle Tracking</h3>
+                <p>Track all active shuttles in real-time on the map</p>
+                <div style="text-align: center; margin: 1rem 0;">
+                    <a href="../map.php" class="btn-primary">View Live Map</a>
+                </div>
+            </div>
+            
             <div class="card">
                 <h3 class="text-orange">General Chat</h3>
                 <div class="chat-container">
@@ -118,5 +126,6 @@ $stmt->close();
     </footer>
     
     <script src="../../assets/js/chat.js"></script>
+    <script src="../../assets/js/main.js"></script>
 </body>
 </html>

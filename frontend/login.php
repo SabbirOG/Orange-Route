@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +14,13 @@
 <body>
     <header>
         <div class="header-container">
-            <h1>🚌 OrangeRoute</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="signup.php">Sign Up</a></li>
-                    <li><a href="forgot_password.php">Forgot Password</a></li>
-                </ul>
-            </nav>
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/navigation.php'; ?>
         </div>
     </header>
     
@@ -37,7 +41,7 @@
                         <input type="password" name="password" id="password" required placeholder="Enter your password">
                     </div>
 
-                    <button type="submit" class="btn-primary btn-cta" style="width: 100%;">Login</button>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
                 </form>
 
                 <?php
@@ -57,5 +61,6 @@
     <footer>
         <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
     </footer>
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>

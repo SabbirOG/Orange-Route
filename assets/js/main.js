@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize logout functionality
     initializeLogout();
+    
+    // Initialize navbar scroll behavior
+    initializeNavbarScroll();
 });
 
 function initializeTooltips() {
@@ -91,12 +94,62 @@ function initializeLogout() {
     const logoutLinks = document.querySelectorAll('a[href*="logout"]');
     logoutLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            e.preventDefault();
             if (confirm('Are you sure you want to logout?')) {
-                window.location.href = this.href;
+                // Allow the default action to proceed
+                return true;
+            } else {
+                // Prevent logout if user cancels
+                e.preventDefault();
+                return false;
             }
         });
     });
+}
+
+function initializeNavbarScroll() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    
+    let lastScrollTop = 0;
+    let ticking = false;
+    
+    function updateNavbarVisibility() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Only hide/show if scrolled more than 100px to prevent flickering
+        if (Math.abs(scrollTop - lastScrollTop) < 100) {
+            ticking = false;
+            return;
+        }
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Scrolling down - hide navbar
+            header.classList.add('navbar-hidden');
+        } else {
+            // Scrolling up - show navbar
+            header.classList.remove('navbar-hidden');
+        }
+        
+        lastScrollTop = scrollTop;
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbarVisibility);
+            ticking = true;
+        }
+    }
+    
+    // Listen for scroll events
+    window.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Show navbar when at the top of the page
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset <= 100) {
+            header.classList.remove('navbar-hidden');
+        }
+    }, { passive: true });
 }
 
 // Utility functions

@@ -45,7 +45,7 @@ CREATE TABLE password_resets (
 ) ENGINE=InnoDB;
 
 -- ==============================
--- 5. Shuttles table
+-- 5. Shuttles table (with location tracking)
 -- ==============================
 CREATE TABLE shuttles (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,6 +55,9 @@ CREATE TABLE shuttles (
     status ENUM('active','inactive') DEFAULT 'inactive',
     traffic_status BOOLEAN DEFAULT FALSE,
     live_link VARCHAR(255) DEFAULT NULL,
+    latitude DECIMAL(10, 8) DEFAULT NULL,
+    longitude DECIMAL(11, 8) DEFAULT NULL,
+    location_updated_at TIMESTAMP DEFAULT NULL,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (driver_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -74,4 +77,84 @@ CREATE TABLE general_chat (
 -- 7. Indexes for performance
 -- ==============================
 CREATE INDEX idx_shuttle_status ON shuttles(status);
+CREATE INDEX idx_shuttle_location ON shuttles(latitude, longitude);
+CREATE INDEX idx_shuttle_active_location ON shuttles(status, latitude, longitude);
 CREATE INDEX idx_chat_created_at ON general_chat(created_at);
+
+-- ==============================
+-- 8. Sample data for testing
+-- ==============================
+
+-- Insert admin user (password: admin123)
+INSERT INTO users (username, email, password, role, verified) VALUES 
+('admin', 'admin@orangeroute.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', TRUE);
+
+-- Insert sample driver (password: driver123)
+INSERT INTO users (username, email, password, role, verified) VALUES 
+('driver1', 'driver@orangeroute.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'driver', TRUE);
+
+-- Insert sample student (password: student123)
+INSERT INTO users (username, email, password, role, verified) VALUES 
+('student1', 'student@orangeroute.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', TRUE);
+
+-- Insert sample shuttle
+INSERT INTO shuttles (driver_id, name, route_name, status, traffic_status) VALUES 
+(2, 'Shuttle A', 'UIU - Natunbazar', 'inactive', FALSE);
+
+-- ==============================
+-- 9. Additional useful tables (optional)
+-- ==============================
+
+-- Routes table for better route management
+CREATE TABLE routes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_location VARCHAR(255),
+    end_location VARCHAR(255),
+    estimated_duration INT, -- in minutes
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Insert sample routes
+INSERT INTO routes (name, description, start_location, end_location, estimated_duration) VALUES 
+('UIU - Natunbazar', 'Main route from UIU to Natunbazar', 'UIU Campus', 'Natunbazar', 25),
+('UIU - Kuril', 'Route from UIU to Kuril', 'UIU Campus', 'Kuril', 30),
+('UIU - Aftabnagar', 'Route from UIU to Aftabnagar', 'UIU Campus', 'Aftabnagar', 35);
+
+-- Notifications table for system notifications
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type ENUM('info', 'warning', 'success', 'error') DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- System settings table
+CREATE TABLE settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
+    description TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Insert default settings
+INSERT INTO settings (setting_key, setting_value, description) VALUES 
+('app_name', 'OrangeRoute', 'Application name'),
+('app_version', '1.0.0', 'Application version'),
+('maintenance_mode', '0', 'Maintenance mode (0=off, 1=on)'),
+('max_shuttles', '10', 'Maximum number of active shuttles'),
+('location_update_interval', '30', 'Location update interval in seconds');
+
+-- ==============================
+-- 10. Additional indexes for new tables
+-- ==============================
+CREATE INDEX idx_notifications_user ON notifications(user_id, is_read);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+CREATE INDEX idx_routes_active ON routes(is_active);

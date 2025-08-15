@@ -29,14 +29,13 @@ $stmt->close();
 <body>
     <header>
         <div class="header-container">
-            <h1>🚌 OrangeRoute</h1>
-            <nav>
-                <ul>
-                    <li><a href="../index.php">Home</a></li>
-                    <li><a href="../profile.php">Profile</a></li>
-                    <li><a href="../../backend/auth.php?action=logout">Logout</a></li>
-                </ul>
-            </nav>
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/dashboard_navigation.php'; ?>
         </div>
     </header>
     
@@ -93,13 +92,18 @@ $stmt->close();
                                     <td><?php echo $shuttle['traffic_status'] ? '🚦 Traffic' : '✅ Normal'; ?></td>
                                     <td>
                                         <form action="../../backend/shuttle.php" method="POST" style="display:inline;">
+                                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                                             <input type="hidden" name="shuttle_id" value="<?php echo $shuttle['id']; ?>">
                                             <?php if($shuttle['status'] === 'inactive'): ?>
                                                 <button type="submit" name="action" value="start" class="btn-primary">Start Route</button>
                                             <?php else: ?>
                                                 <button type="submit" name="action" value="down" class="btn-secondary">Stop Route</button>
                                             <?php endif; ?>
-                                            <button type="submit" name="action" value="traffic" class="btn-secondary">Report Traffic</button>
+                                            <?php if($shuttle['traffic_status']): ?>
+                                                <button type="submit" name="action" value="no_traffic" class="btn-secondary">No Traffic</button>
+                                            <?php else: ?>
+                                                <button type="submit" name="action" value="traffic" class="btn-secondary">Report Traffic</button>
+                                            <?php endif; ?>
                                         </form>
                                     </td>
                                 </tr>
@@ -108,6 +112,24 @@ $stmt->close();
                     </table>
                 </div>
             <?php endif; ?>
+            
+            <!-- Location Update Section -->
+            <div class="card">
+                <h3>📍 Update Location</h3>
+                <p>Share your current location with students so they can track your shuttle in real-time.</p>
+                
+                <div id="location-status" class="location-status">
+                    <p>Click "Get My Location" to share your current position</p>
+                </div>
+                
+                <div class="location-controls">
+                    <button id="get-location-btn" class="btn-primary">Get My Location</button>
+                    <button id="update-location-btn" class="btn-secondary" disabled>Update Location</button>
+                    <span id="last-updated" class="last-updated"></span>
+                </div>
+                
+                <div id="location-map" class="location-map" style="height: 300px; margin-top: 1rem; border-radius: 8px; display: none;"></div>
+            </div>
             
             <div class="card">
                 <h3 class="text-orange">Driver Communication</h3>
@@ -131,5 +153,153 @@ $stmt->close();
     </footer>
     
     <script src="../../assets/js/chat.js"></script>
+    <script src="../../assets/js/main.js"></script>
+    
+    <!-- Location Update Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const getLocationBtn = document.getElementById('get-location-btn');
+        const updateLocationBtn = document.getElementById('update-location-btn');
+        const locationStatus = document.getElementById('location-status');
+        const lastUpdated = document.getElementById('last-updated');
+        const locationMap = document.getElementById('location-map');
+        
+        let currentLocation = null;
+        let map = null;
+        let marker = null;
+        
+        // Get user's current location
+        getLocationBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                locationStatus.innerHTML = '<p style="color: red;">Geolocation is not supported by this browser.</p>';
+                return;
+            }
+            
+            locationStatus.innerHTML = '<p>Getting your location...</p>';
+            getLocationBtn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    
+                    locationStatus.innerHTML = '<p style="color: green;">✅ Location obtained successfully!</p>';
+                    updateLocationBtn.disabled = false;
+                    getLocationBtn.disabled = false;
+                    
+                    // Show map with location
+                    showLocationOnMap(currentLocation);
+                },
+                function(error) {
+                    let errorMessage = 'Unable to get your location. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'Please allow location access.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'Location request timed out.';
+                            break;
+                    }
+                    locationStatus.innerHTML = '<p style="color: red;">' + errorMessage + '</p>';
+                    getLocationBtn.disabled = false;
+                }
+            );
+        });
+        
+        // Update location to server
+        updateLocationBtn.addEventListener('click', function() {
+            if (!currentLocation) {
+                alert('Please get your location first.');
+                return;
+            }
+            
+            // Get the first active shuttle ID (assuming driver has one active shuttle)
+            const shuttleRows = document.querySelectorAll('tbody tr');
+            let shuttleId = null;
+            
+            for (let row of shuttleRows) {
+                const statusCell = row.querySelector('td:nth-child(3)');
+                if (statusCell && statusCell.textContent.includes('Active')) {
+                    const form = row.querySelector('form');
+                    if (form) {
+                        const shuttleIdInput = form.querySelector('input[name="shuttle_id"]');
+                        if (shuttleIdInput) {
+                            shuttleId = shuttleIdInput.value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!shuttleId) {
+                alert('No active shuttle found. Please start a route first.');
+                return;
+            }
+            
+            updateLocationBtn.disabled = true;
+            updateLocationBtn.textContent = 'Updating...';
+            
+            fetch('../../backend/update_location.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    shuttle_id: shuttleId,
+                    latitude: currentLocation.latitude,
+                    longitude: currentLocation.longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    locationStatus.innerHTML = '<p style="color: green;">✅ Location updated successfully!</p>';
+                    lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                    updateLocationBtn.textContent = 'Update Location';
+                } else {
+                    locationStatus.innerHTML = '<p style="color: red;">❌ Failed to update location: ' + data.message + '</p>';
+                }
+                updateLocationBtn.disabled = false;
+            })
+            .catch(error => {
+                locationStatus.innerHTML = '<p style="color: red;">❌ Error updating location: ' + error.message + '</p>';
+                updateLocationBtn.disabled = false;
+                updateLocationBtn.textContent = 'Update Location';
+            });
+        });
+        
+        // Show location on map
+        function showLocationOnMap(location) {
+            locationMap.style.display = 'block';
+            
+            if (!map) {
+                map = L.map('location-map').setView([location.latitude, location.longitude], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+            } else {
+                map.setView([location.latitude, location.longitude], 15);
+            }
+            
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            
+            marker = L.marker([location.latitude, location.longitude])
+                .addTo(map)
+                .bindPopup('Your current location')
+                .openPopup();
+        }
+    });
+    </script>
+    
+    <!-- Leaflet CSS and JS for map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>

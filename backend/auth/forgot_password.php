@@ -21,11 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iss", $user['id'], $resetCode, $expiresAt);
     
     if ($stmt->execute()) {
-        // In a real application, send email here
-        error_log("Password reset code for $email: $resetCode");
-        echo "Reset code sent to your email. <a href='../../frontend/reset_password.php'>Reset Password</a>";
+        // Store the reset code in session for display
+        $_SESSION['reset_code'] = $resetCode;
+        $_SESSION['reset_email'] = $email;
+        
+        // Redirect to reset password page with the code
+        header("Location: ../../frontend/reset_password.php?code=" . $resetCode . "&email=" . urlencode($email));
+        exit();
     } else {
-        echo "Failed to send reset code. Please try again.";
+        header("Location: ../../frontend/forgot_password.php?error=failed");
+        exit();
     }
     
     $stmt->close();

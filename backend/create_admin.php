@@ -2,6 +2,11 @@
 // create_admin.php - Create admin user for testing
 // WARNING: Remove this file after creating admin user
 
+// Security check - only allow access from localhost
+if ($_SERVER['REMOTE_ADDR'] !== '127.0.0.1' && $_SERVER['REMOTE_ADDR'] !== '::1') {
+    die("Access denied. This script can only be run from localhost.");
+}
+
 include 'db.php';
 
 // Check if admin already exists

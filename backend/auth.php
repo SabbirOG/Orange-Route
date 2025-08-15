@@ -1,5 +1,6 @@
 <?php
 // auth.php - Authentication helper functions
+require_once 'config.php';
 
 function getUserById($userId) {
     global $conn;
@@ -29,7 +30,7 @@ function isLoggedIn() {
 
 function requireLogin() {
     if (!isLoggedIn()) {
-        header("Location: ../frontend/login.php");
+        header("Location: ../frontend/landing.php");
         exit();
     }
 }
@@ -42,13 +43,43 @@ function requireRole($role) {
 }
 
 function logout() {
+    // Log logout attempt for debugging
+    error_log("Logout attempt for user ID: " . ($_SESSION['user_id'] ?? 'unknown'));
+    
+    // Clear all session variables
+    $_SESSION = array();
+    
+    // Destroy the session cookie with multiple attempts
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        // Try multiple cookie destruction methods
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+        setcookie(session_name(), '', time() - 42000, $params["path"]);
+        setcookie(session_name(), '', time() - 42000);
+    }
+    
+    // Regenerate session ID to prevent session fixation
+    session_regenerate_id(true);
+    
+    // Destroy the session
     session_destroy();
-    header("Location: ../frontend/login.php");
+    
+    // Log successful logout
+    error_log("Logout successful, redirecting to landing page");
+    
+    // Redirect to landing page
+    header("Location: ../frontend/landing.php");
     exit();
 }
 
 // Handle logout action
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     logout();
 }
 

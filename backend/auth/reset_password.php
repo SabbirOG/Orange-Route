@@ -46,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt2->execute();
         $stmt2->close();
         
-        echo "Password reset successful. <a href='../../frontend/login.php'>Login here</a>.";
+        header("Location: ../../frontend/reset_password.php?success=1");
+        exit();
     } else {
         echo "Failed to reset password. Please try again.";
     }

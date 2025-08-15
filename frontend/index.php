@@ -1,3 +1,29 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Redirect to landing page if user is not authenticated
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    header("Location: landing.php");
+    exit();
+}
+
+// Redirect authenticated users to their appropriate dashboard
+if (isset($_SESSION['role'])) {
+    switch ($_SESSION['role']) {
+        case 'admin':
+            header("Location: dashboards/admin_dashboard.php");
+            exit();
+        case 'driver':
+            header("Location: dashboards/driver_dashboard.php");
+            exit();
+        case 'user':
+            header("Location: dashboards/user_dashboard.php");
+            exit();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +35,13 @@
 <body>
     <header>
         <div class="header-container">
-            <h1>🚌 OrangeRoute</h1>
-            <nav>
-                <ul>
-                    <li><a href="login.php">Login</a></li>
-                    <li><a href="signup.php">Sign Up</a></li>
-                    <li><a href="forgot_password.php">Forgot Password</a></li>
-                </ul>
-            </nav>
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/navigation.php'; ?>
         </div>
     </header>
     <main>
@@ -40,9 +65,9 @@
                     </div>
                 </div>
                 
-                <div class="mt-2">
-                    <a href="login.php" class="btn-primary btn-cta">Get Started</a>
-                    <a href="signup.php" class="btn-secondary btn-cta">Create Account</a>
+                <div class="mt-2" style="text-align: center;">
+                    <a href="login.php" style="display: inline-block; padding: 12px 24px; margin: 8px; background: #FF6B35; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; border: 2px solid #FF6B35; transition: all 0.3s ease;" onmouseover="this.style.background='white'; this.style.color='#FF6B35'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#FF6B35'; this.style.color='white'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">Get Started</a>
+                    <a href="signup.php" style="display: inline-block; padding: 12px 24px; margin: 8px; background: #FF6B35; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; border: 2px solid #FF6B35; transition: all 0.3s ease;" onmouseover="this.style.background='white'; this.style.color='#FF6B35'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#FF6B35'; this.style.color='white'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">Create Account</a>
                 </div>
             </div>
         </div>
