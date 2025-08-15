@@ -2,6 +2,7 @@
 session_start();
 require_once '../backend/db.php';
 require_once '../backend/auth.php';
+require_once '../backend/config.php';
 
 // Redirect to landing page if user is not authenticated
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
@@ -73,6 +74,30 @@ if (!$user) {
                 <p><strong>Status:</strong> <span class="<?php echo $user['verified'] ? 'status-verified' : 'status-not-verified'; ?>"><?php echo $user['verified'] ? 'Verified' : 'Not Verified'; ?></span></p>
                 <a href="reset_password.php" class="btn-secondary">Reset Password</a>
             </div>
+            
+            <?php if (isset($_GET['error'])): ?>
+                <div class="alert alert-danger" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #dc3545;">
+                    <?php 
+                    $error = $_GET['error'];
+                    switch($error) {
+                        case 'csrf_invalid':
+                            echo '<strong>Security Error!</strong> Invalid request. Please try again.';
+                            break;
+                        case 'access_denied':
+                            echo '<strong>Access Denied!</strong> You can only update your own profile.';
+                            break;
+                        default:
+                            echo '<strong>Error!</strong> ' . htmlspecialchars($error);
+                    }
+                    ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['success'])): ?>
+                <div class="alert alert-success" style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;">
+                    <strong>Success!</strong> Profile picture updated successfully.
+                </div>
+            <?php endif; ?>
             
             <div class="card">
                 <h3 class="text-orange">Update Profile Picture</h3>

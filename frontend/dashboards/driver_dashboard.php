@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../../backend/db.php';
+include '../../backend/config.php';
 
 // Check if driver is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'driver') {
