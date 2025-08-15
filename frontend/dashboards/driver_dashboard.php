@@ -115,7 +115,7 @@ $stmt->close();
             <?php endif; ?>
             
             <!-- Location Update Section -->
-            <div class="card">
+            <div class="card location-card">
                 <h3>📍 Update Location</h3>
                 <p>Share your current location with students so they can track your shuttle in real-time.</p>
                 
@@ -124,12 +124,18 @@ $stmt->close();
                 </div>
                 
                 <div class="location-controls">
-                    <button id="get-location-btn" class="btn-primary">Get My Location</button>
-                    <button id="update-location-btn" class="btn-secondary" disabled>Update Location</button>
-                    <span id="last-updated" class="last-updated"></span>
+                    <button id="get-location-btn" class="btn-primary location-btn">
+                        <span class="btn-icon">📍</span>
+                        Get My Location
+                    </button>
+                    <button id="update-location-btn" class="btn-secondary location-btn" disabled>
+                        <span class="btn-icon">🔄</span>
+                        Update Location
+                    </button>
+                    <div id="last-updated" class="last-updated"></div>
                 </div>
                 
-                <div id="location-map" class="location-map" style="height: 300px; margin-top: 1rem; border-radius: 8px; display: none;"></div>
+                <div id="location-map" class="location-map"></div>
             </div>
             
             <div class="card">
@@ -186,7 +192,7 @@ $stmt->close();
                         longitude: position.coords.longitude
                     };
                     
-                    locationStatus.innerHTML = '<p style="color: green;">✅ Location obtained successfully!</p>';
+                    locationStatus.innerHTML = '<p class="success">✅ Location obtained successfully!</p>';
                     updateLocationBtn.disabled = false;
                     getLocationBtn.disabled = false;
                     
@@ -206,7 +212,7 @@ $stmt->close();
                             errorMessage += 'Location request timed out.';
                             break;
                     }
-                    locationStatus.innerHTML = '<p style="color: red;">' + errorMessage + '</p>';
+                    locationStatus.innerHTML = '<p class="error">' + errorMessage + '</p>';
                     getLocationBtn.disabled = false;
                 }
             );
@@ -224,8 +230,22 @@ $stmt->close();
             let shuttleId = null;
             
             for (let row of shuttleRows) {
-                const statusCell = row.querySelector('td:nth-child(3)');
-                if (statusCell && statusCell.textContent.includes('Active')) {
+                const statusCell = row.querySelector('td:nth-child(3)'); // Status column
+                if (statusCell && statusCell.textContent.trim().toLowerCase().includes('active')) {
+                    const form = row.querySelector('form');
+                    if (form) {
+                        const shuttleIdInput = form.querySelector('input[name="shuttle_id"]');
+                        if (shuttleIdInput) {
+                            shuttleId = shuttleIdInput.value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Fallback: if no active shuttle found, try to get any shuttle ID
+            if (!shuttleId) {
+                for (let row of shuttleRows) {
                     const form = row.querySelector('form');
                     if (form) {
                         const shuttleIdInput = form.querySelector('input[name="shuttle_id"]');
@@ -238,12 +258,13 @@ $stmt->close();
             }
             
             if (!shuttleId) {
-                alert('No active shuttle found. Please start a route first.');
+                locationStatus.innerHTML = '<p class="error">❌ No shuttle found. Please ensure you have an assigned shuttle.</p>';
                 return;
             }
             
             updateLocationBtn.disabled = true;
             updateLocationBtn.textContent = 'Updating...';
+            locationStatus.innerHTML = '<p class="info">🔄 Updating location...</p>';
             
             fetch('../../backend/update_location.php', {
                 method: 'POST',
@@ -256,19 +277,32 @@ $stmt->close();
                     longitude: currentLocation.longitude
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    locationStatus.innerHTML = '<p style="color: green;">✅ Location updated successfully!</p>';
+                    locationStatus.innerHTML = '<p class="success">✅ Location updated successfully!</p>';
                     lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
                     updateLocationBtn.textContent = 'Update Location';
+                    
+                    // Show success animation
+                    updateLocationBtn.style.background = '#28a745';
+                    setTimeout(() => {
+                        updateLocationBtn.style.background = '';
+                    }, 2000);
                 } else {
-                    locationStatus.innerHTML = '<p style="color: red;">❌ Failed to update location: ' + data.message + '</p>';
+                    locationStatus.innerHTML = '<p class="error">❌ Failed to update location: ' + (data.message || 'Unknown error') + '</p>';
+                    updateLocationBtn.textContent = 'Update Location';
                 }
                 updateLocationBtn.disabled = false;
             })
             .catch(error => {
-                locationStatus.innerHTML = '<p style="color: red;">❌ Error updating location: ' + error.message + '</p>';
+                console.error('Location update error:', error);
+                locationStatus.innerHTML = '<p class="error">❌ Error updating location: ' + error.message + '</p>';
                 updateLocationBtn.disabled = false;
                 updateLocationBtn.textContent = 'Update Location';
             });
@@ -277,6 +311,7 @@ $stmt->close();
         // Show location on map
         function showLocationOnMap(location) {
             locationMap.style.display = 'block';
+            locationMap.classList.add('visible');
             
             if (!map) {
                 map = L.map('location-map').setView([location.latitude, location.longitude], 15);
@@ -293,7 +328,14 @@ $stmt->close();
             
             marker = L.marker([location.latitude, location.longitude])
                 .addTo(map)
-                .bindPopup('Your current location')
+                .bindPopup(`
+                    <div style="text-align: center;">
+                        <h4>📍 Your Location</h4>
+                        <p><strong>Lat:</strong> ${location.latitude.toFixed(6)}</p>
+                        <p><strong>Lng:</strong> ${location.longitude.toFixed(6)}</p>
+                        <p><strong>Time:</strong> ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                `)
                 .openPopup();
         }
     });
