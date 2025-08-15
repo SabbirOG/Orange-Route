@@ -1,5 +1,5 @@
 # Force all languages to be visible in GitHub stats
-*.php linguist-language=PHP
+*.php linguist-language=HTML
 *.css linguist-language=CSS
 *.js linguist-language=JavaScript
 *.sql linguist-language=SQL
