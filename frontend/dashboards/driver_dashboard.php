@@ -132,10 +132,6 @@ $stmt->close();
                         <span class="btn-icon">🔄</span>
                         Update Location
                     </button>
-                    <button id="test-db-btn" class="btn-secondary location-btn">
-                        <span class="btn-icon">🔧</span>
-                        Test DB
-                    </button>
                     <div id="last-updated" class="last-updated"></div>
                 </div>
                 
@@ -171,7 +167,6 @@ $stmt->close();
     document.addEventListener('DOMContentLoaded', function() {
         const getLocationBtn = document.getElementById('get-location-btn');
         const updateLocationBtn = document.getElementById('update-location-btn');
-        const testDbBtn = document.getElementById('test-db-btn');
         const locationStatus = document.getElementById('location-status');
         const lastUpdated = document.getElementById('last-updated');
         const locationMap = document.getElementById('location-map');
@@ -271,8 +266,7 @@ $stmt->close();
             updateLocationBtn.textContent = 'Updating...';
             locationStatus.innerHTML = '<p class="info">🔄 Updating location...</p>';
             
-            // First test with debug endpoint
-            fetch('../../backend/debug_location.php', {
+            fetch('../../backend/update_location.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -323,38 +317,6 @@ $stmt->close();
                 updateLocationBtn.disabled = false;
                 updateLocationBtn.textContent = 'Update Location';
             });
-        });
-        
-        // Test database button
-        testDbBtn.addEventListener('click', function() {
-            testDbBtn.disabled = true;
-            testDbBtn.textContent = 'Testing...';
-            locationStatus.innerHTML = '<p class="info">🔧 Testing database structure...</p>';
-            
-            fetch('../../backend/test_shuttles_table.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        locationStatus.innerHTML = `
-                            <div class="success">
-                                <p>✅ Database test successful!</p>
-                                <p><strong>Columns:</strong> ${data.table_structure.columns.join(', ')}</p>
-                                <p><strong>Has Latitude:</strong> ${data.table_structure.has_latitude ? 'Yes' : 'No'}</p>
-                                <p><strong>Has Longitude:</strong> ${data.table_structure.has_longitude ? 'Yes' : 'No'}</p>
-                                <p><strong>Total Shuttles:</strong> ${data.total_shuttles}</p>
-                            </div>
-                        `;
-                    } else {
-                        locationStatus.innerHTML = '<p class="error">❌ Database test failed: ' + data.error + '</p>';
-                    }
-                    testDbBtn.disabled = false;
-                    testDbBtn.textContent = 'Test DB';
-                })
-                .catch(error => {
-                    locationStatus.innerHTML = '<p class="error">❌ Database test error: ' + error.message + '</p>';
-                    testDbBtn.disabled = false;
-                    testDbBtn.textContent = 'Test DB';
-                });
         });
         
         // Show location on map
