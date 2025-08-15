@@ -14,6 +14,12 @@
     --transition: all 0.3s ease;
 }
 
+/* Ensure proper viewport handling */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -26,6 +32,8 @@ body {
     color: var(--text-dark);
     background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* Header Styles */
@@ -40,10 +48,12 @@ header {
 .header-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 1rem;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 
 /* Logo Section */
@@ -52,7 +62,6 @@ header {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 0.5rem;
 }
 
 .circle {
@@ -99,13 +108,12 @@ nav {
 nav ul {
     list-style: none;
     display: flex;
-    justify-content: center;
-    gap: 1.5rem;
+    justify-content: flex-end;
+    gap: 1rem;
     flex-wrap: wrap;
     margin: 0;
     padding: 0;
-    max-width: 1200px;
-    margin: 0 auto;
+    align-items: center;
 }
 
 nav li {
@@ -164,6 +172,8 @@ nav a.active {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Cards */
@@ -254,7 +264,15 @@ button[type="submit"]:active,
     background: var(--white);
     color: var(--primary-orange);
     border: 2px solid var(--primary-orange);
+    padding: 0.75rem 2rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
     transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
     box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
 }
 
@@ -898,6 +916,23 @@ footer {
 }
 
 /* Mobile screens (phone landscape and portrait) */
+/* Tablet and small desktop */
+@media (max-width: 1024px) {
+    .header-container {
+        padding: 0 1.5rem;
+    }
+    
+    nav ul {
+        gap: 0.75rem;
+    }
+    
+    nav a {
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile landscape and small tablets */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
@@ -906,16 +941,20 @@ footer {
     
     .header-container {
         padding: 0 1rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     header h1 {
         font-size: 1.5rem;
-        margin: 0.75rem 0 0.25rem 0;
+        margin: 0.5rem 0;
     }
     
     .logo-section {
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
+        margin-bottom: 0;
     }
     
     .circle {
@@ -925,26 +964,59 @@ footer {
     
     nav {
         padding: 0.5rem 0;
+        width: 100%;
     }
     
     nav ul {
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.5rem;
         align-items: center;
+        justify-content: center;
         width: 100%;
+        flex-wrap: wrap;
     }
     
     nav a {
-        padding: 0.75rem 1.5rem;
-        width: 100%;
-        max-width: 250px;
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+        min-width: auto;
+        flex: 1;
         text-align: center;
-        font-size: 0.95rem;
+        max-width: 120px;
     }
     
     .dashboard-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+    
+    /* Make tables responsive */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 100%;
+        width: max-content;
+    }
+    
+    /* Fix card layouts for mobile */
+    .card {
+        margin: 0.5rem 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Fix shuttle cards for mobile */
+    .shuttle-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    .shuttle-card {
+        margin: 0;
+        width: 100%;
     }
     
     .hero-title {
@@ -980,37 +1052,63 @@ footer {
     textarea {
         padding: 0.875rem 1rem;
         font-size: 0.95rem;
+        min-height: 44px;
+        width: 100%;
+        border-radius: 8px;
+    }
+    
+    /* Ensure all interactive elements are touch-friendly */
+    button, .btn, input[type="submit"], input[type="button"], a.btn {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
     }
 }
 
-/* Extra small screens (small phones) */
+/* Small mobile screens (phones in portrait) */
 @media (max-width: 480px) {
     .container {
         padding: 0.75rem;
+        max-width: 100%;
     }
     
     .header-container {
         padding: 0 0.75rem;
+        flex-direction: column;
+        gap: 0.25rem;
     }
     
     header h1 {
         font-size: 1.25rem;
-        margin: 0.5rem 0 0.25rem 0;
+        margin: 0.25rem 0;
     }
     
     .logo-section {
         gap: 8px;
+        flex-direction: row;
     }
     
     .circle {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    nav {
+        padding: 0.25rem 0;
+    }
+    
+    nav ul {
+        flex-direction: column;
+        gap: 0.25rem;
+        width: 100%;
     }
     
     nav a {
-        padding: 0.625rem 1.25rem;
-        font-size: 0.9rem;
-        max-width: 200px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        width: 100%;
+        max-width: none;
+        text-align: center;
     }
     
     .hero-title {
@@ -1026,13 +1124,19 @@ footer {
     }
     
     .card {
-        padding: 1.25rem;
+        padding: 1rem;
         margin: 0.5rem 0;
+        border-radius: 8px;
     }
     
     .btn-primary, .btn-secondary {
-        padding: 0.625rem 1.25rem;
+        padding: 0.75rem 1.5rem;
         font-size: 0.9rem;
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .form-group {
@@ -2555,5 +2659,48 @@ video {
     
     .location-map {
         height: 250px;
+    }
+    
+    .location-btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}
+
+/* Additional responsive utilities */
+@media (max-width: 768px) {
+    /* Hide elements on mobile if needed */
+    .d-mobile-none {
+        display: none !important;
+    }
+    
+    /* Show elements only on mobile */
+    .d-mobile-only {
+        display: block !important;
+    }
+    
+    /* Full width on mobile */
+    .w-mobile-full {
+        width: 100% !important;
+    }
+    
+    /* Stack elements vertically on mobile */
+    .flex-mobile-column {
+        flex-direction: column !important;
+    }
+    
+    /* Center text on mobile */
+    .text-mobile-center {
+        text-align: center !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .d-mobile-only {
+        display: none !important;
+    }
+    
+    .d-mobile-none {
+        display: block !important;
     }
 }

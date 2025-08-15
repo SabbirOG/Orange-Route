@@ -33,6 +33,10 @@ if (session_status() === PHP_SESSION_NONE) {
                     <div class="alert alert-danger" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #dc3545;">
                         <strong>Error!</strong> Failed to send reset code. Please try again.
                     </div>
+                <?php elseif (isset($_GET['success']) && $_GET['success'] === '1'): ?>
+                    <div class="alert alert-success" style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;">
+                        <strong>Success!</strong> Reset code has been generated. You will be redirected to the reset password page.
+                    </div>
                 <?php endif; ?>
                 
                 <p class="text-center mb-2">Enter your email to receive a reset code.</p>
@@ -53,7 +57,16 @@ if (session_status() === PHP_SESSION_NONE) {
     </main>
     
     <footer>
-        <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📱</span>
+                <a href="#" style="color: var(--white); text-decoration: none; font-weight: 500;">Follow Us</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📧</span>
+                <a href="mailto:contact@orangeroute.com" style="color: var(--white); text-decoration: none; font-weight: 500;">Contact Us</a>
+            </div>
+        </div>
     </footer>
     <script src="../assets/js/main.js"></script>
 </body>

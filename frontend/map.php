@@ -102,10 +102,59 @@ $stmt->close();
             text-align: center;
             margin-top: 1rem;
         }
+        
+        .shuttle-item {
+            transition: all 0.3s ease;
+        }
+        
+        .shuttle-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .map-container {
+                height: 50vh;
+            }
+            
+            .refresh-btn {
+                bottom: 1rem;
+                right: 1rem;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .shuttle-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .shuttle-status {
+                align-self: flex-end;
+            }
+        }
     </style>
 </head>
 <body>
-    <?php include 'includes/navigation.php'; ?>
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="dashboards/user_dashboard.php">Dashboard</a></li>
+                    <li><a href="profile.php">Profile</a></li>
+                    <li><a href="../backend/auth.php?action=logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
     
     <main class="container">
         <div class="hero-section">
@@ -121,13 +170,22 @@ $stmt->close();
             <div id="last-updated" class="last-updated"></div>
         </div>
         
-        <div id="map" class="map-container"></div>
+        <div id="mapid" class="map-container"></div>
         
         <button id="refresh-btn" class="refresh-btn" title="Refresh Locations">🔄</button>
     </main>
     
     <footer>
-        <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📱</span>
+                <a href="#" style="color: var(--white); text-decoration: none; font-weight: 500;">Follow Us</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📧</span>
+                <a href="mailto:contact@orangeroute.com" style="color: var(--white); text-decoration: none; font-weight: 500;">Contact Us</a>
+            </div>
+        </div>
     </footer>
     
     <script src="../assets/js/main.js"></script>
@@ -141,20 +199,36 @@ $stmt->close();
         
         // Initialize map
         function initMap() {
-            // Default center (UIU location - you can change this)
-            const defaultCenter = [23.7806, 90.4192]; // Dhaka coordinates
-            
-            map = L.map('map').setView(defaultCenter, 12);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            try {
+                // Default center (UIU location - you can change this)
+                const defaultCenter = [23.7806, 90.4192]; // Dhaka coordinates
+                
+                map = L.map('mapid').setView(defaultCenter, 12);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                console.log('Map initialized successfully');
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                document.getElementById('mapid').innerHTML = 
+                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #6c757d; text-align: center; padding: 2rem;"><div><h4>Map Loading Error</h4><p>Unable to load the map. Please refresh the page or try again later.</p></div></div>';
+            }
         }
         
         // Load shuttle locations
         function loadShuttleLocations() {
+            const shuttleList = document.getElementById('shuttle-list');
+            shuttleList.innerHTML = '<p>Loading shuttle locations...</p>';
+            
             fetch('../backend/get_shuttle_locations.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         updateShuttleList(data.shuttles);
@@ -163,10 +237,12 @@ $stmt->close();
                             'Last updated: ' + new Date().toLocaleTimeString();
                     } else {
                         console.error('Failed to load shuttle locations:', data.message);
+                        shuttleList.innerHTML = '<p style="color: #dc3545;">Error loading shuttle locations: ' + data.message + '</p>';
                     }
                 })
                 .catch(error => {
                     console.error('Error loading shuttle locations:', error);
+                    shuttleList.innerHTML = '<p style="color: #dc3545;">Error loading shuttle locations. Please check your connection and try again.</p>';
                 });
         }
         
@@ -175,7 +251,14 @@ $stmt->close();
             const shuttleList = document.getElementById('shuttle-list');
             
             if (shuttles.length === 0) {
-                shuttleList.innerHTML = '<p>No active shuttles found.</p>';
+                shuttleList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🚌</div>
+                        <h4>No Active Shuttles</h4>
+                        <p>There are currently no shuttles with live location tracking.</p>
+                        <p><small>Check back later or contact your driver for updates.</small></p>
+                    </div>
+                `;
                 return;
             }
             
@@ -262,11 +345,18 @@ $stmt->close();
         
         // Refresh button
         document.getElementById('refresh-btn').addEventListener('click', function() {
-            this.style.transform = 'rotate(360deg)';
+            const btn = this;
+            btn.style.transform = 'rotate(360deg)';
+            btn.style.pointerEvents = 'none';
+            btn.innerHTML = '⏳';
+            
             loadShuttleLocations();
+            
             setTimeout(() => {
-                this.style.transform = 'rotate(0deg)';
-            }, 500);
+                btn.style.transform = 'rotate(0deg)';
+                btn.style.pointerEvents = 'auto';
+                btn.innerHTML = '🔄';
+            }, 1000);
         });
         
         // Auto-refresh every 30 seconds

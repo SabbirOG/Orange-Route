@@ -50,7 +50,16 @@ if (session_status() === PHP_SESSION_NONE) {
     </main>
     
     <footer>
-        <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📱</span>
+                <a href="#" style="color: var(--white); text-decoration: none; font-weight: 500;">Follow Us</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📧</span>
+                <a href="mailto:contact@orangeroute.com" style="color: var(--white); text-decoration: none; font-weight: 500;">Contact Us</a>
+            </div>
+        </div>
     </footer>
 </body>
 </html>

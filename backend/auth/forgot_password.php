@@ -15,8 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Generate reset code
     $resetCode = generateVerificationCode();
     
-    // Store reset code in database
-    $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+    // Debug logging
+    error_log("Forgot Password - Email: $email, Generated Code: $resetCode");
+    
+    // Store reset code in database (expires in 60 seconds for security)
+    $expiresAt = date('Y-m-d H:i:s', strtotime('+60 seconds'));
     $stmt = $conn->prepare("INSERT INTO password_resets (user_id, code, expires_at) VALUES (?, ?, ?)");
     $stmt->bind_param("iss", $user['id'], $resetCode, $expiresAt);
     

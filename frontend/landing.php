@@ -36,8 +36,11 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($_SESSI
                 <h1>OrangeRoute</h1>
             </div>
             <nav>
-                <a href="login.php" class="btn-secondary">Login</a>
-                <a href="signup.php" class="btn-secondary">Sign Up</a>
+                <ul>
+                    <li><a href="landing.php" class="btn-secondary">Home</a></li>
+                    <li><a href="login.php" class="btn-secondary">Login</a></li>
+                    <li><a href="signup.php" class="btn-secondary">Sign Up</a></li>
+                </ul>
             </nav>
         </div>
     </header>

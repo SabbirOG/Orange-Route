@@ -45,7 +45,19 @@ CREATE TABLE password_resets (
 ) ENGINE=InnoDB;
 
 -- ==============================
--- 5. Shuttles table (with location tracking)
+-- 5. Password history table
+-- ==============================
+CREATE TABLE password_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_password (user_id, password_hash)
+) ENGINE=InnoDB;
+
+-- ==============================
+-- 6. Shuttles table (with location tracking)
 -- ==============================
 CREATE TABLE shuttles (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,7 +75,7 @@ CREATE TABLE shuttles (
 ) ENGINE=InnoDB;
 
 -- ==============================
--- 6. General chat table
+-- 7. General chat table
 -- ==============================
 CREATE TABLE general_chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,7 +86,7 @@ CREATE TABLE general_chat (
 ) ENGINE=InnoDB;
 
 -- ==============================
--- 7. Indexes for performance
+-- 8. Indexes for performance
 -- ==============================
 CREATE INDEX idx_shuttle_status ON shuttles(status);
 CREATE INDEX idx_shuttle_location ON shuttles(latitude, longitude);
@@ -82,7 +94,7 @@ CREATE INDEX idx_shuttle_active_location ON shuttles(status, latitude, longitude
 CREATE INDEX idx_chat_created_at ON general_chat(created_at);
 
 -- ==============================
--- 8. Sample data for testing
+-- 9. Sample data for testing
 -- ==============================
 
 -- Insert admin user (password: admin123)
@@ -102,7 +114,7 @@ INSERT INTO shuttles (driver_id, name, route_name, status, traffic_status) VALUE
 (2, 'Shuttle A', 'UIU - Natunbazar', 'inactive', FALSE);
 
 -- ==============================
--- 9. Additional useful tables (optional)
+-- 10. Additional useful tables (optional)
 -- ==============================
 
 -- Routes table for better route management
@@ -153,7 +165,7 @@ INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('location_update_interval', '30', 'Location update interval in seconds');
 
 -- ==============================
--- 10. Additional indexes for new tables
+-- 11. Additional indexes for new tables
 -- ==============================
 CREATE INDEX idx_notifications_user ON notifications(user_id, is_read);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);

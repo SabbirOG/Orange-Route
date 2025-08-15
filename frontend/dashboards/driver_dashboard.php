@@ -123,13 +123,44 @@ $stmt->close();
                     <p>Click "Get My Location" to share your current position</p>
                 </div>
                 
+                <div id="manual-location" class="manual-location" style="display: none; margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <h4>📍 Manual Location Entry</h4>
+                    <p>If GPS is not working, you can enter your coordinates manually:</p>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <label>Latitude:</label>
+                            <input type="number" id="manual-lat" step="0.000001" placeholder="23.7806" style="width: 120px; padding: 0.5rem; margin: 0 0.5rem;">
+                        </div>
+                        <div>
+                            <label>Longitude:</label>
+                            <input type="number" id="manual-lng" step="0.000001" placeholder="90.4192" style="width: 120px; padding: 0.5rem; margin: 0 0.5rem;">
+                        </div>
+                        <button id="use-manual-location" class="btn-secondary location-btn">
+                            <span class="btn-icon">📍</span>
+                            Use These Coordinates
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="location-controls">
                     <button id="get-location-btn" class="btn-primary location-btn">
                         <span class="btn-icon">📍</span>
                         Get My Location
                     </button>
-                    <button id="update-location-btn" class="btn-secondary location-btn" disabled>
+                    <button id="refresh-location-btn" class="btn-secondary location-btn" style="display: none;">
                         <span class="btn-icon">🔄</span>
+                        Refresh Location
+                    </button>
+                    <button id="stop-tracking-btn" class="btn-secondary location-btn" style="display: none;">
+                        <span class="btn-icon">⏹️</span>
+                        Stop Tracking
+                    </button>
+                    <button id="center-location-btn" class="btn-secondary location-btn" style="display: none;">
+                        <span class="btn-icon">🎯</span>
+                        Center on Me
+                    </button>
+                    <button id="update-location-btn" class="btn-secondary location-btn" disabled>
+                        <span class="btn-icon">📤</span>
                         Update Location
                     </button>
                     <div id="last-updated" class="last-updated"></div>
@@ -156,7 +187,14 @@ $stmt->close();
     </main>
     
     <footer>
-        <p>&copy; 2024 OrangeRoute - Developed by Sabbir Ahmed. Helping the student community with better transportation tracking.</p>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div>
+                <a href="https://github.com/SabbirOG" target="_blank" style="color: var(--white); text-decoration: none; font-weight: 500;">Follow Us</a>
+            </div>
+            <div>
+                <a href="https://www.linkedin.com/in/sabbirog/" target="_blank" style="color: var(--white); text-decoration: none; font-weight: 500;">Contact Us</a>
+            </div>
+        </div>
     </footer>
     
     <script src="../../assets/js/chat.js"></script>
@@ -166,7 +204,12 @@ $stmt->close();
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const getLocationBtn = document.getElementById('get-location-btn');
+        const refreshLocationBtn = document.getElementById('refresh-location-btn');
+        const stopTrackingBtn = document.getElementById('stop-tracking-btn');
+        const centerLocationBtn = document.getElementById('center-location-btn');
         const updateLocationBtn = document.getElementById('update-location-btn');
+        const useManualLocationBtn = document.getElementById('use-manual-location');
+        const manualLocationDiv = document.getElementById('manual-location');
         const locationStatus = document.getElementById('location-status');
         const lastUpdated = document.getElementById('last-updated');
         const locationMap = document.getElementById('location-map');
@@ -174,32 +217,70 @@ $stmt->close();
         let currentLocation = null;
         let map = null;
         let marker = null;
+        let watchId = null; // For continuous location tracking
+        let autoUpdateInterval = null; // For automatic server updates
         
-        // Get user's current location
-        getLocationBtn.addEventListener('click', function() {
-            if (!navigator.geolocation) {
-                locationStatus.innerHTML = '<p style="color: red;">Geolocation is not supported by this browser.</p>';
-                return;
-            }
+        // Function to get accurate location with multiple attempts
+        function getAccurateLocation(attempt = 1) {
+            console.log(`getAccurateLocation called, attempt ${attempt}`);
+            const maxAttempts = 3;
             
-            locationStatus.innerHTML = '<p>Getting your location...</p>';
-            getLocationBtn.disabled = true;
+            // Geolocation options for maximum GPS accuracy
+            const options = {
+                enableHighAccuracy: true,  // Use GPS if available
+                timeout: 25000,            // Wait even longer for GPS
+                maximumAge: 0,             // Don't use cached location
+                altitude: false,           // Don't need altitude
+                altitudeAccuracy: false,   // Don't need altitude accuracy
+                speed: false,              // Don't need speed
+                heading: false             // Don't need heading
+            };
             
+            console.log('Calling navigator.geolocation.getCurrentPosition...');
             navigator.geolocation.getCurrentPosition(
                 function(position) {
+                    console.log('Location success callback called', position);
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Check if accuracy is good enough (less than 50 meters)
+                    if (accuracy > 50 && attempt < maxAttempts) {
+                        console.log(`Accuracy ${Math.round(accuracy)}m not good enough, retrying...`);
+                        locationStatus.innerHTML = `<p>Location accuracy: ${Math.round(accuracy)}m (attempt ${attempt}/${maxAttempts}). Trying again for better accuracy...</p>`;
+                        setTimeout(() => getAccurateLocation(attempt + 1), 2000);
+                        return;
+                    }
+                    
                     currentLocation = {
                         latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
+                        longitude: position.coords.longitude,
+                        accuracy: accuracy
                     };
                     
-                    locationStatus.innerHTML = '<p class="success">✅ Location obtained successfully!</p>';
+                    // Show detailed location info with debugging
+                    locationStatus.innerHTML = `
+                        <div class="success">
+                            <p>✅ Location obtained successfully!</p>
+                            <p><strong>Latitude:</strong> ${currentLocation.latitude.toFixed(6)}</p>
+                            <p><strong>Longitude:</strong> ${currentLocation.longitude.toFixed(6)}</p>
+                            <p><strong>Accuracy:</strong> ${Math.round(currentLocation.accuracy)} meters</p>
+                            <p><strong>Google Maps Link:</strong> <a href="https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}" target="_blank" style="color: #007bff;">View on Google Maps</a></p>
+                            <p><strong>Attempts:</strong> ${attempt}/${maxAttempts}</p>
+                        </div>
+                    `;
                     updateLocationBtn.disabled = false;
                     getLocationBtn.disabled = false;
+                    refreshLocationBtn.style.display = 'inline-flex';
+                    stopTrackingBtn.style.display = 'inline-flex';
+                    centerLocationBtn.style.display = 'inline-flex';
                     
                     // Show map with location
                     showLocationOnMap(currentLocation);
+                    
+                    // Start continuous location tracking (like Google Maps)
+                    startLocationTracking();
                 },
                 function(error) {
+                    console.log('Location error callback called', error);
                     let errorMessage = 'Unable to get your location. ';
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
@@ -212,14 +293,127 @@ $stmt->close();
                             errorMessage += 'Location request timed out.';
                             break;
                     }
+                    
+                    // Try again if we haven't reached max attempts
+                    if (attempt < maxAttempts) {
+                        locationStatus.innerHTML = `<p class="error">${errorMessage} Trying again... (attempt ${attempt}/${maxAttempts})</p>`;
+                        setTimeout(() => getAccurateLocation(attempt + 1), 3000);
+                        return;
+                    }
+                    
                     locationStatus.innerHTML = '<p class="error">' + errorMessage + '</p>';
                     getLocationBtn.disabled = false;
-                }
+                    
+                    // Show manual location option if GPS fails
+                    if (error.code === error.PERMISSION_DENIED || error.code === error.POSITION_UNAVAILABLE) {
+                        manualLocationDiv.style.display = 'block';
+                    }
+                },
+                options
             );
+        }
+        
+        // Get user's current location with multiple attempts for accuracy
+        getLocationBtn.addEventListener('click', function() {
+            console.log('Get Location button clicked');
+            
+            if (!navigator.geolocation) {
+                console.log('Geolocation not supported');
+                locationStatus.innerHTML = '<p style="color: red;">Geolocation is not supported by this browser.</p>';
+                return;
+            }
+            
+            console.log('Starting location detection...');
+            locationStatus.innerHTML = '<p>Getting your location with GPS...</p>';
+            getLocationBtn.disabled = true;
+            
+            // Try to get the most accurate location possible
+            getAccurateLocation();
+        });
+        
+        // Refresh location button
+        refreshLocationBtn.addEventListener('click', function() {
+            getLocationBtn.click(); // Trigger the same location detection
+        });
+        
+        // Stop tracking button
+        stopTrackingBtn.addEventListener('click', function() {
+            stopLocationTracking();
+            locationStatus.innerHTML = `
+                <div class="success">
+                    <p>⏹️ Location tracking stopped</p>
+                    <p><strong>Last Known Location:</strong></p>
+                    <p><strong>Latitude:</strong> ${currentLocation ? currentLocation.latitude.toFixed(6) : 'N/A'}</p>
+                    <p><strong>Longitude:</strong> ${currentLocation ? currentLocation.longitude.toFixed(6) : 'N/A'}</p>
+                </div>
+            `;
+            
+            // Re-enable the Get My Location button
+            getLocationBtn.disabled = false;
+            getLocationBtn.textContent = 'Get My Location';
+            
+            // Hide tracking buttons
+            stopTrackingBtn.style.display = 'none';
+            centerLocationBtn.style.display = 'none';
+        });
+        
+        // Center location button
+        centerLocationBtn.addEventListener('click', function() {
+            if (currentLocation && map) {
+                map.setView([currentLocation.latitude, currentLocation.longitude], 18);
+                if (marker) {
+                    marker.openPopup();
+                }
+            }
+        });
+        
+        // Manual location entry
+        useManualLocationBtn.addEventListener('click', function() {
+            const lat = parseFloat(document.getElementById('manual-lat').value);
+            const lng = parseFloat(document.getElementById('manual-lng').value);
+            
+            if (isNaN(lat) || isNaN(lng)) {
+                alert('Please enter valid latitude and longitude values.');
+                return;
+            }
+            
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                alert('Invalid coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180.');
+                return;
+            }
+            
+            currentLocation = {
+                latitude: lat,
+                longitude: lng,
+                accuracy: 0 // Manual entry, no accuracy info
+            };
+            
+            locationStatus.innerHTML = `
+                <div class="success">
+                    <p>✅ Manual location set successfully!</p>
+                    <p><strong>Latitude:</strong> ${currentLocation.latitude.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${currentLocation.longitude.toFixed(6)}</p>
+                    <p><strong>Source:</strong> Manual Entry</p>
+                </div>
+            `;
+            
+            updateLocationBtn.disabled = false;
+            refreshLocationBtn.style.display = 'inline-flex';
+            stopTrackingBtn.style.display = 'inline-flex';
+            manualLocationDiv.style.display = 'none';
+            
+            // Show map with location
+            showLocationOnMap(currentLocation);
+            
+            // Start continuous location tracking (like Google Maps)
+            startLocationTracking();
         });
         
         // Update location to server
         updateLocationBtn.addEventListener('click', function() {
+            console.log('Update Location button clicked');
+            console.log('Current location:', currentLocation);
+            
             if (!currentLocation) {
                 alert('Please get your location first.');
                 return;
@@ -229,14 +423,18 @@ $stmt->close();
             const shuttleRows = document.querySelectorAll('tbody tr');
             let shuttleId = null;
             
+            console.log('Found shuttle rows:', shuttleRows.length);
+            
             for (let row of shuttleRows) {
                 const statusCell = row.querySelector('td:nth-child(3)'); // Status column
+                console.log('Status cell text:', statusCell ? statusCell.textContent.trim() : 'No status cell');
                 if (statusCell && statusCell.textContent.trim().toLowerCase().includes('active')) {
                     const form = row.querySelector('form');
                     if (form) {
                         const shuttleIdInput = form.querySelector('input[name="shuttle_id"]');
                         if (shuttleIdInput) {
                             shuttleId = shuttleIdInput.value;
+                            console.log('Found active shuttle ID:', shuttleId);
                             break;
                         }
                     }
@@ -319,18 +517,153 @@ $stmt->close();
             });
         });
         
+        // Start continuous location tracking (like Google Maps)
+        function startLocationTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            
+            const trackingOptions = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 5000 // Allow 5 seconds old location
+            };
+            
+            watchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    // Update current location
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    // Update status with live info
+                    locationStatus.innerHTML = `
+                        <div class="success">
+                            <p>🔄 Live tracking active</p>
+                            <p><strong>Latitude:</strong> ${currentLocation.latitude.toFixed(6)}</p>
+                            <p><strong>Longitude:</strong> ${currentLocation.longitude.toFixed(6)}</p>
+                            <p><strong>Accuracy:</strong> ${Math.round(currentLocation.accuracy)} meters</p>
+                            <p><strong>Last Update:</strong> ${new Date().toLocaleTimeString()}</p>
+                        </div>
+                    `;
+                    
+                    // Update map with new location
+                    if (map) {
+                        map.setView([currentLocation.latitude, currentLocation.longitude], 18);
+                        if (marker) {
+                            map.removeLayer(marker);
+                        }
+                        marker = L.marker([currentLocation.latitude, currentLocation.longitude])
+                            .addTo(map)
+                            .bindPopup(`
+                                <div style="text-align: center;">
+                                    <h4>📍 Your Live Location</h4>
+                                    <p><strong>Lat:</strong> ${currentLocation.latitude.toFixed(6)}</p>
+                                    <p><strong>Lng:</strong> ${currentLocation.longitude.toFixed(6)}</p>
+                                    <p><strong>Time:</strong> ${new Date().toLocaleTimeString()}</p>
+                                    <p><strong>Accuracy:</strong> ${Math.round(currentLocation.accuracy)}m</p>
+                                </div>
+                            `)
+                            .openPopup();
+                    }
+                    
+                    // Auto-update location to server every 30 seconds (like Google Maps)
+                    autoUpdateLocationToServer();
+                },
+                function(error) {
+                    console.log('Location tracking error:', error);
+                    // Don't show error for tracking, just log it
+                },
+                trackingOptions
+            );
+        }
+        
+        // Stop location tracking
+        function stopLocationTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
+            }
+            
+            // Reset button states
+            getLocationBtn.disabled = false;
+            getLocationBtn.textContent = 'Get My Location';
+            // Keep updateLocationBtn enabled if we have a current location
+            updateLocationBtn.disabled = !currentLocation;
+        }
+        
+        // Auto-update location to server (like Google Maps)
+        function autoUpdateLocationToServer() {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+            }
+            
+            autoUpdateInterval = setInterval(() => {
+                if (currentLocation) {
+                    // Get active shuttle ID
+                    const shuttleId = getActiveShuttleId();
+                    if (shuttleId) {
+                        updateLocationToServer(shuttleId, currentLocation);
+                    }
+                }
+            }, 30000); // Update every 30 seconds
+        }
+        
+        // Helper function to update location to server
+        function updateLocationToServer(shuttleId, location) {
+            fetch('../../backend/update_location.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    shuttle_id: shuttleId,
+                    latitude: location.latitude,
+                    longitude: location.longitude
+                })
+            })
+            .then(response => response.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.log('Raw response:', text);
+                    return { success: false, message: 'Invalid response from server' };
+                }
+            }))
+            .then(data => {
+                if (data.success) {
+                    console.log('Location auto-updated:', data.message);
+                    // Update last updated time
+                    lastUpdated.innerHTML = `<p><strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}</p>`;
+                } else {
+                    console.log('Auto-update failed:', data.message);
+                }
+            })
+            .catch(error => {
+                console.log('Auto-update error:', error);
+            });
+        }
+        
         // Show location on map
         function showLocationOnMap(location) {
             locationMap.style.display = 'block';
             locationMap.classList.add('visible');
             
             if (!map) {
-                map = L.map('location-map').setView([location.latitude, location.longitude], 15);
+                // Start with a higher zoom level for better accuracy
+                map = L.map('location-map').setView([location.latitude, location.longitude], 18);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
             } else {
-                map.setView([location.latitude, location.longitude], 15);
+                // Use higher zoom level for better accuracy
+                map.setView([location.latitude, location.longitude], 18);
             }
             
             if (marker) {
