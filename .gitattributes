@@ -14,5 +14,6 @@ uploads/  linguist-vendored
 *.txt     linguist-documentation
 *.log     linguist-vendored
 
-# Ensure no files are detected as Hack
-*         linguist-language=PHP
+# Ensure proper detection of mixed content files
+*.php     linguist-detectable
+

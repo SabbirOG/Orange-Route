@@ -96,10 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: ../../frontend/reset_password.php?success=1");
         exit();
     } else {
+        $stmt->close();
         header("Location: ../../frontend/reset_password.php?error=database_error");
         exit();
     }
-    
-    $stmt->close();
 }
 ?>
