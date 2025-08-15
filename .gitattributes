@@ -1,5 +1,5 @@
-# Force GitHub to detect HTML in PHP files
-*.php linguist-language=HTML
+# Let GitHub detect both HTML and PHP content in PHP files
+# Remove the override to allow mixed language detection
 
 # Keep other file types as they are
 *.css linguist-language=CSS
