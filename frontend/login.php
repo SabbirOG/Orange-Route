@@ -1,0 +1,73 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OrangeRoute</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="circle">
+                    <img src="../assets/images/orangeroute-logo-modified.png" alt="OrangeRoute Logo" class="logo">
+                </div>
+                <h1>OrangeRoute</h1>
+            </div>
+            <?php include 'includes/navigation.php'; ?>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <div class="card" style="max-width: 400px; margin: 2rem auto;">
+                <h2 class="text-center text-orange">Login to OrangeRoute</h2>
+                <p class="text-center mb-2">Welcome back! Please sign in to your account.</p>
+                
+                <form action="../backend/auth/login.php" method="POST">
+                    <div class="form-group">
+                        <label for="email">Email Address:</label>
+                        <input type="email" name="email" id="email" required placeholder="Enter your email address">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" id="password" required placeholder="Enter your password">
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+                </form>
+
+                <?php
+                if (isset($_GET['error'])) {
+                    echo '<div class="error">Access denied or invalid credentials. Please try again.</div>';
+                }
+                ?>
+
+                <div class="text-center mt-2">
+                    <p>Don't have an account? <a href="signup.php" class="text-orange">Sign up here</a></p>
+                    <p><a href="forgot_password.php" class="text-orange">Forgot your password?</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div>
+                <a href="https://github.com/SabbirOG" target="_blank" style="color: var(--white); text-decoration: none; font-weight: 500;">Follow Us</a>
+            </div>
+            <div>
+                <a href="https://www.linkedin.com/in/sabbirog/" target="_blank" style="color: var(--white); text-decoration: none; font-weight: 500;">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+    <script src="../assets/js/main.js"></script>
+</body>
+</html>

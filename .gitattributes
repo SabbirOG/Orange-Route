@@ -1,0 +1,18 @@
+# Force correct language detection
+*.php     linguist-language=PHP
+*.html    linguist-language=HTML
+*.css     linguist-language=CSS
+*.js      linguist-language=JavaScript
+*.sql     linguist-language=SQL
+
+# Exclude certain directories from language detection
+logs/     linguist-vendored
+uploads/  linguist-vendored
+
+# Force specific file types
+*.md      linguist-documentation
+*.txt     linguist-documentation
+*.log     linguist-vendored
+
+# Ensure no files are detected as Hack
+*         linguist-language=PHP
