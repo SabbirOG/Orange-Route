@@ -15,7 +15,7 @@ if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
 // APPLICATION SETTINGS
 // ===========================================
 if (!defined('APP_NAME')) define('APP_NAME', 'OrangeRoute');
-if (!defined('APP_VERSION')) define('APP_VERSION', '1.0.0');
+if (!defined('APP_VERSION')) define('APP_VERSION', '2.1.0');
 if (!defined('APP_URL')) define('APP_URL', 'http://localhost/OrangeRoute');
 if (!defined('APP_TIMEZONE')) define('APP_TIMEZONE', 'Asia/Dhaka');
 
