@@ -2,9 +2,6 @@
 // Include configuration
 require_once 'config.php';
 
-// Database connection class for OrangeRoute
-// Updated: September 24, 2025 - Enhanced error handling
-
 // Create database connection
 $conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 

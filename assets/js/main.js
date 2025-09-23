@@ -1,5 +1,4 @@
 // OrangeRoute - Main JavaScript functionality
-// Updated: September 24, 2025 - Enhanced performance and error handling
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips and interactive elements
