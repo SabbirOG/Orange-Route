@@ -76,3 +76,17 @@ MIT License - Developed for university welfare purposes.
 ---
 
 **Developed by [Sabbir Ahmed](https://github.com/sabbirOG)** - Making university transportation smarter and more connected! 🚌✨
+
+## Recent Updates (September 2025)
+
+### v2.1.0 - Enhanced User Experience
+- Improved real-time tracking accuracy
+- Added push notifications for shuttle arrivals
+- Enhanced mobile responsiveness
+- Performance optimizations
+
+### v2.0.0 - Major Features
+- Real-time GPS tracking
+- Live chat system
+- Advanced route optimization
+- Multi-role dashboard system
