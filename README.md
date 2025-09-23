@@ -81,9 +81,9 @@ MIT License - Developed for university welfare purposes.
 
 ### v2.1.0 - Enhanced User Experience
 - Improved real-time tracking accuracy
-- Added push notifications for shuttle arrivals
 - Enhanced mobile responsiveness
 - Performance optimizations
+- Better error handling
 
 ### v2.0.0 - Major Features
 - Real-time GPS tracking
