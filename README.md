@@ -79,11 +79,12 @@ MIT License - Developed for university welfare purposes.
 
 ## Recent Updates (September 2025)
 
-### v2.1.0 - Enhanced User Experience
+### v2.1.0 - Enhanced User Experience (September 24, 2025)
 - Improved real-time tracking accuracy
 - Enhanced mobile responsiveness
 - Performance optimizations
 - Better error handling
+- Code quality improvements
 
 ### v2.0.0 - Major Features
 - Real-time GPS tracking
