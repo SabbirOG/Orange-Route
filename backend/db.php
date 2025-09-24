@@ -13,4 +13,7 @@ if ($conn->connect_error) {
 
 // Set charset
 $conn->set_charset(DB_CHARSET);
+
+// Set timezone for database operations
+$conn->query("SET time_zone = '+06:00'");
 ?>
