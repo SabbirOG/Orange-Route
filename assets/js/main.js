@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize navbar scroll behavior
     initializeNavbarScroll();
+    
+    // Initialize any additional features
+    initializeAdditionalFeatures();
 });
 
 function initializeTooltips() {
